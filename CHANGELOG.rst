@@ -11,6 +11,9 @@ it pauses on the end time.
 
 Blades: Disallow users to enter video url's in http.
 
+Blades: Latex problems are now enabled via use_latex_compiler
+key in course settings. (BLD-426)
+
 Blades: Fix bug when the speed can only be changed when the video is playing.
 
 LMS: Change bulk email implementation to use less memory, and to better handle
