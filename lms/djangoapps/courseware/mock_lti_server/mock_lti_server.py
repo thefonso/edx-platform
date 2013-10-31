@@ -3,6 +3,7 @@ import urlparse
 from oauthlib.oauth1.rfc5849 import signature
 import mock
 import sys
+import requests
 from logging import getLogger
 logger = getLogger(__name__)
 
@@ -66,6 +67,9 @@ class MockLTIRequestHandler(BaseHTTPRequestHandler):
                     status_message = "This is LTI tool. Success."
                 else:
                     status_message = "Wrong LTI signature"
+
+            if post_dict["lis_outcome_service_url"]:
+                self._send_graded_result()
         else:
             status_message = "Invalid request URL"
 
@@ -101,6 +105,14 @@ class MockLTIRequestHandler(BaseHTTPRequestHandler):
             # and will therefore send an error response
             return {}
         return post_dict
+
+
+    def _send_graded_result(self):
+        post_dict = self._post_dict()
+
+        payload = {'key1': 'value1', 'key2': 'value2'}
+        requests.post(post_dict["lis_outcome_service_url"], data=payload)
+
 
     def _send_response(self, message):
         '''
