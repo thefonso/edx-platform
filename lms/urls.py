@@ -64,6 +64,8 @@ urlpatterns = ('',  # nopep8
     url(r'^user_api/', include('user_api.urls')),
 
     url(r'^', include('waffle.urls')),
+
+    url(r'^grade_lti$', 'student.views.grade_lti', name='grade_lti'),
 )
 
 # if settings.MITX_FEATURES.get("MULTIPLE_ENROLLMENT_ROLES"):

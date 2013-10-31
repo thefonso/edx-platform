@@ -48,6 +48,7 @@ class LTIFields(object):
     launch_url = String(help="URL of the tool", default='http://www.example.com', scope=Scope.settings)
     custom_parameters = List(help="Custom parameters (vbid, book_location, etc..)", scope=Scope.settings)
     open_in_a_new_page = Boolean(help="Should LTI be opened in new page?", default=True, scope=Scope.settings)
+    is_graded = Boolean(help="The LTI provider will grade student's results", default=False, scope=Scope.settings)
 
 
 class LTIModule(LTIFields, XModule):
@@ -259,6 +260,16 @@ class LTIModule(LTIFields, XModule):
             u'lti_version': 'LTI-1p0',
             u'role': u'student'
         }
+
+        if self.is_graded:
+            body.update({
+                # TODO: Generate properly.
+                "lis_person_sourcedid": "857298237538593757",
+
+                # TODO: Get course based callback URL.
+                # urls.py -> grade_lti
+                "lis_outcome_service_url": "http://asdkfljakljfaf",
+            })
 
         # appending custom parameter for signing
         body.update(custom_parameters)

@@ -73,3 +73,39 @@ class MockLTIServerTest(unittest.TestCase):
         )
         response = response_handle.read()
         self.assertTrue('Wrong LTI signature' in response)
+
+
+    def test_graded_request(self):
+        """
+        Tests that LTI server processes a graded request. It should trigger
+        the callback URL provided.
+        """
+        request = {
+            'user_id': 'default_user_id',
+            'role': 'student',
+            'oauth_nonce': '',
+            'oauth_timestamp': '',
+            'oauth_consumer_key': 'client_key',
+            'lti_version': 'LTI-1p0',
+            'oauth_signature_method': 'HMAC-SHA1',
+            'oauth_version': '1.0',
+            'oauth_signature': '',
+            'lti_message_type': 'basic-lti-launch-request',
+            'oauth_callback': 'about:blank',
+            'launch_presentation_return_url': '',
+            'lis_outcome_service_url': '',
+            'lis_result_sourcedid': ''
+
+            # TODO: Generate properly.
+            "lis_person_sourcedid": "857298237538593757",
+
+            # TODO: Get course based callback URL.
+            "lis_outcome_service_url": "http://asdkfljakljfaf",
+        }
+
+        response_handle = urllib.urlopen(
+            self.server.oauth_settings['lti_base'] + self.server.oauth_settings['lti_endpoint'],
+            urllib.urlencode(request)
+        )
+        response = response_handle.read()
+        self.assertTrue('Wrong LTI signature' in response)
