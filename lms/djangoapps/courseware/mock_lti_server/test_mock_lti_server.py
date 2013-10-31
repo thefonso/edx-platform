@@ -97,7 +97,7 @@ class MockLTIServerTest(unittest.TestCase):
             'oauth_callback': 'about:blank',
             'launch_presentation_return_url': '',
             'lis_outcome_service_url': '',
-            'lis_result_sourcedid': ''
+            'lis_result_sourcedid': '',
 
             # TODO: Generate properly.
             "lis_person_sourcedid": "857298237538593757",
