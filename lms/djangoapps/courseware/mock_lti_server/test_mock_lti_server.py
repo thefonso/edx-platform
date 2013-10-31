@@ -80,6 +80,9 @@ class MockLTIServerTest(unittest.TestCase):
         Tests that LTI server processes a graded request. It should trigger
         the callback URL provided.
         """
+        server_port = 8000
+        server_host = '127.0.0.1'
+
         request = {
             'user_id': 'default_user_id',
             'role': 'student',
@@ -100,7 +103,7 @@ class MockLTIServerTest(unittest.TestCase):
             "lis_person_sourcedid": "857298237538593757",
 
             # TODO: Get course based callback URL.
-            "lis_outcome_service_url": "http://asdkfljakljfaf",
+            "lis_outcome_service_url": 'http://{}:{}/grade_lti'.format(server_host, server_port),
         }
 
         response_handle = urllib.urlopen(
