@@ -56,7 +56,8 @@ class MockLTIRequestHandler(BaseHTTPRequestHandler):
                 'oauth_callback',
                 'lis_outcome_service_url',
                 'lis_result_sourcedid',
-                'launch_presentation_return_url'
+                'launch_presentation_return_url',
+                'lis_person_sourcedid',
             ]
 
             if sorted(correct_keys) != sorted(post_dict.keys()):
@@ -68,8 +69,9 @@ class MockLTIRequestHandler(BaseHTTPRequestHandler):
                 else:
                     status_message = "Wrong LTI signature"
 
-            if post_dict["lis_outcome_service_url"]:
-                self._send_graded_result()
+            callback_url = post_dict["lis_outcome_service_url"]
+            if callback_url:
+                self._send_graded_result(callback_url)
         else:
             status_message = "Invalid request URL"
 
@@ -106,13 +108,12 @@ class MockLTIRequestHandler(BaseHTTPRequestHandler):
             return {}
         return post_dict
 
-
-    def _send_graded_result(self):
-        post_dict = self._post_dict()
-
+    def _send_graded_result(self, callback_url):
         payload = {'key1': 'value1', 'key2': 'value2'}
-        requests.post(post_dict["lis_outcome_service_url"], data=payload)
 
+        # temporarily changed to get for easy view in browser
+        response = requests.get(callback_url, data=payload)
+        assert response.status_code == 200
 
     def _send_response(self, message):
         '''

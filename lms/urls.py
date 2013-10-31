@@ -64,8 +64,6 @@ urlpatterns = ('',  # nopep8
     url(r'^user_api/', include('user_api.urls')),
 
     url(r'^', include('waffle.urls')),
-
-    url(r'^grade_lti$', 'lti.grader.run', name='grade_lti'),
 )
 
 # if settings.MITX_FEATURES.get("MULTIPLE_ENROLLMENT_ROLES"):
@@ -442,6 +440,12 @@ if settings.MITX_FEATURES.get('RUN_AS_ANALYTICS_SERVER_ENABLED'):
 urlpatterns += (
     # The path is hardcoded into their app...
     url(r'^comm/foldit_ops', 'foldit.views.foldit_ops', name="foldit_ops"),
+)
+
+# LTI grader views
+urlpatterns += (
+    # The path is hardcoded into their app...
+    url(r'^grade_lti', 'lti.views.grade', name="grade_lti"),
 )
 
 if settings.MITX_FEATURES.get('ENABLE_DEBUG_RUN_PYTHON'):

@@ -5,8 +5,7 @@ import unittest
 import threading
 import urllib
 from mock_lti_server import MockLTIServer
-
-from nose.plugins.skip import SkipTest
+import requests
 
 
 class MockLTIServerTest(unittest.TestCase):
@@ -18,11 +17,6 @@ class MockLTIServerTest(unittest.TestCase):
     '''
 
     def setUp(self):
-
-        # This is a test of the test setup,
-        # so it does not need to run as part of the unit test suite
-        # You can re-enable it by commenting out the line below
-        # raise SkipTest
 
         # Create the server
         server_port = 8034
@@ -74,7 +68,6 @@ class MockLTIServerTest(unittest.TestCase):
         response = response_handle.read()
         self.assertTrue('Wrong LTI signature' in response)
 
-
     def test_graded_request(self):
         """
         Tests that LTI server processes a graded request. It should trigger
@@ -82,6 +75,7 @@ class MockLTIServerTest(unittest.TestCase):
         """
         server_port = 8000
         server_host = '127.0.0.1'
+        callback_url = 'http://{}:{}/grade_lti'.format(server_host, server_port)
 
         request = {
             'user_id': 'default_user_id',
@@ -103,7 +97,7 @@ class MockLTIServerTest(unittest.TestCase):
             "lis_person_sourcedid": "857298237538593757",
 
             # TODO: Get course based callback URL.
-            "lis_outcome_service_url": 'http://{}:{}/grade_lti'.format(server_host, server_port),
+            "lis_outcome_service_url": callback_url,
         }
 
         response_handle = urllib.urlopen(
@@ -112,3 +106,8 @@ class MockLTIServerTest(unittest.TestCase):
         )
         response = response_handle.read()
         self.assertTrue('Wrong LTI signature' in response)
+
+        # reading grading result back
+        response = requests.get(callback_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, "Hello, Valera and Anton!")
