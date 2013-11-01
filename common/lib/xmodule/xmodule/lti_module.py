@@ -5,6 +5,8 @@ Protocol is oauth1, LTI version is 1.1.1:
 http://www.imsglobal.org/LTI/v1p1p1/ltiIMGv1p1p1.html
 """
 
+from uuid import uuid4
+
 import logging
 import oauthlib.oauth1
 import urllib
@@ -212,10 +214,13 @@ class LTIModule(LTIFields, XModule):
 
             custom_parameters[unicode(param_name)] = unicode(param_value)
 
+        self.resource_link_id = uuid4().hex
+
         input_fields = self.oauth_params(
             custom_parameters,
             client_key,
-            client_secret
+            client_secret,
+            self.resource_link_id
         )
         context = {
             'input_fields': input_fields,
@@ -230,7 +235,7 @@ class LTIModule(LTIFields, XModule):
 
         return self.system.render_template('lti.html', context)
 
-    def oauth_params(self, custom_parameters, client_key, client_secret):
+    def oauth_params(self, custom_parameters, client_key, client_secret, resource_link_id):
         """
         Signs request and returns signature and oauth parameters.
 
@@ -253,12 +258,11 @@ class LTIModule(LTIFields, XModule):
         body = {
             u'user_id': user_id,
             u'oauth_callback': u'about:blank',
-            u'lis_outcome_service_url': '',
-            u'lis_result_sourcedid': '',
             u'launch_presentation_return_url': '',
             u'lti_message_type': u'basic-lti-launch-request',
             u'lti_version': 'LTI-1p0',
-            u'role': u'student'
+            u'role': u'student',
+            u'resource_link_id': unicode(resource_link_id)
         }
 
         if self.is_graded:
@@ -307,6 +311,17 @@ oauth_consumer_key="", oauth_signature="frVp4JuvT1mVXlxktiAUjQ7%2F1cw%3D"'}
         # We send form via browser, so browser will encode it again,
         # So we need to decode signature back:
         params[u'oauth_signature'] = urllib.unquote(params[u'oauth_signature']).decode('utf8')
+
+        if self.is_graded:
+            BASE_PATH = 'localhost:8000'
+            body.update({
+                # TODO: Generate properly.
+                "lis_person_sourcedid": '%s:::%s' % (resource_link_id, user_id),
+
+                # TODO: Get course based callback URL.
+                # urls.py -> grade_lti
+                "lis_outcome_service_url": '%s/grade_lti' % BASE_PATH
+        })
 
         # add lti parameters to oauth parameters for sending in form
         params.update(body)
