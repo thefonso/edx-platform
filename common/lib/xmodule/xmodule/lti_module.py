@@ -317,4 +317,8 @@ class LTIModuleDescriptor(LTIFields, MetadataOnlyEditingDescriptor, EmptyDataRaw
     """
     Descriptor for LTI Xmodule.
     """
+    always_recalculate_grades = True
+    has_score = True
+    graded = True
+
     module_class = LTIModule
