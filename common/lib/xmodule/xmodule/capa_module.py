@@ -159,7 +159,7 @@ class CapaFields(object):
         # and in inheritance.py
     )
     use_latex_compiler = Boolean(
-        help="Enable LaTeX compiler in problems?",
+        help="Enable LaTeX templates?",
         default=False,
         scope=Scope.settings
     )

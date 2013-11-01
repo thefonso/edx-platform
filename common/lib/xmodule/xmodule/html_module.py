@@ -31,7 +31,7 @@ class HtmlFields(object):
     data = String(help="Html contents to display for this module", default=u"", scope=Scope.content)
     source_code = String(help="Source code for LaTeX documents. This feature is not well-supported.", scope=Scope.settings)
     use_latex_compiler = Boolean(
-        help="Enable LaTeX compiler in problems?",
+        help="Enable LaTeX templates?",
         default=False,
         scope=Scope.settings
     )

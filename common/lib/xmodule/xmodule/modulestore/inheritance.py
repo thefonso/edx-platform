@@ -48,7 +48,7 @@ class InheritanceMixin(XBlockMixin):
         scope=Scope.settings
     )
     use_latex_compiler = Boolean(
-        help="Enable LaTeX compiler in problems?",
+        help="Enable LaTeX templates?",
         default=False,
         scope=Scope.settings)
 
