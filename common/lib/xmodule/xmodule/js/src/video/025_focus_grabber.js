@@ -44,14 +44,11 @@ function () {
     // Private functions.
 
     function _makeFunctionsPublic(state) {
-        state.focusGrabber.enableFocusGrabber  = _.bind(
-            enableFocusGrabber, state
-        );
-        state.focusGrabber.disableFocusGrabber = _.bind(
-            disableFocusGrabber, state
-        );
+        var methodsList = [
+            enableFocusGrabber, disableFocusGrabber, onFocus
+        ];
 
-        state.focusGrabber.onFocus = _.bind(onFocus, state);
+        state.bindTo(methodsList, state.focusGrabber, state);
     }
 
     function _renderElements(state) {

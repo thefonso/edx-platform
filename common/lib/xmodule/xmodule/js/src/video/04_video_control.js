@@ -24,14 +24,12 @@ function () {
     //     Functions which will be accessible via 'state' object. When called, these functions will
     //     get the 'state' object as a context.
     function _makeFunctionsPublic(state) {
-        state.videoControl.showControls     = _.bind(showControls,state);
-        state.videoControl.hideControls     = _.bind(hideControls,state);
-        state.videoControl.play             = _.bind(play,state);
-        state.videoControl.pause            = _.bind(pause,state);
-        state.videoControl.togglePlayback   = _.bind(togglePlayback,state);
-        state.videoControl.toggleFullScreen = _.bind(toggleFullScreen,state);
-        state.videoControl.exitFullScreen   = _.bind(exitFullScreen,state);
-        state.videoControl.updateVcrVidTime = _.bind(updateVcrVidTime,state);
+        var methodsList = [
+            showControls, hideControls, play, pause, togglePlayback,
+            toggleFullScreen, toggleFullScreen, exitFullScreen, updateVcrVidTime
+        ];
+
+        state.bindTo(methodsList, state.videoControl, state);
     }
 
     // function _renderElements(state)

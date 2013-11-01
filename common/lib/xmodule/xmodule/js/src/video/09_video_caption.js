@@ -37,53 +37,17 @@ function () {
     //     Functions which will be accessible via 'state' object. When called,
     //     these functions will get the 'state' object as a context.
     function _makeFunctionsPublic(state) {
-        state.videoCaption.autoShowCaptions    = _.bind(
-            autoShowCaptions, state
-        );
-        state.videoCaption.autoHideCaptions    = _.bind(
-            autoHideCaptions, state
-        );
-        state.videoCaption.resize              = _.bind(resize, state);
-        state.videoCaption.toggle              = _.bind(toggle, state);
-        state.videoCaption.onMouseEnter        = _.bind(onMouseEnter, state);
-        state.videoCaption.onMouseLeave        = _.bind(onMouseLeave, state);
-        state.videoCaption.onMovement          = _.bind(onMovement, state);
-        state.videoCaption.renderCaption       = _.bind(renderCaption, state);
-        state.videoCaption.captionHeight       = _.bind(captionHeight, state);
-        state.videoCaption.topSpacingHeight    = _.bind(
-            topSpacingHeight, state
-        );
-        state.videoCaption.bottomSpacingHeight = _.bind(
-            bottomSpacingHeight, state
-        );
-        state.videoCaption.scrollCaption       = _.bind(scrollCaption, state);
-        state.videoCaption.search              = _.bind(search, state);
-        state.videoCaption.play                = _.bind(play, state);
-        state.videoCaption.pause               = _.bind(pause, state);
-        state.videoCaption.seekPlayer          = _.bind(seekPlayer, state);
-        state.videoCaption.hideCaptions        = _.bind(hideCaptions, state);
-        state.videoCaption.calculateOffset     = _.bind(
-            calculateOffset, state
-        );
-        state.videoCaption.updatePlayTime      = _.bind(updatePlayTime, state);
-        state.videoCaption.setSubtitlesHeight  = _.bind(
-            setSubtitlesHeight, state
-        );
+        var methodsList = [
+            autoShowCaptions, autoHideCaptions, resize, toggle, onMouseEnter,
+            onMouseLeave, onMovement, renderCaption, captionHeight,
+            topSpacingHeight, bottomSpacingHeight, scrollCaption, search, play,
+            pause, seekPlayer, hideCaptions, calculateOffset, updatePlayTime,
+            setSubtitlesHeight, renderElements, bindHandlers, fetchCaption,
+            captionURL, captionMouseOverOut, captionMouseDown, captionClick,
+            captionFocus, captionBlur, captionKeyDown
+        ];
 
-        state.videoCaption.renderElements      = _.bind(renderElements, state);
-        state.videoCaption.bindHandlers        = _.bind(bindHandlers, state);
-        state.videoCaption.fetchCaption        = _.bind(fetchCaption, state);
-        state.videoCaption.captionURL          = _.bind(captionURL, state);
-        state.videoCaption.captionMouseOverOut = _.bind(
-            captionMouseOverOut, state
-        );
-        state.videoCaption.captionMouseDown    = _.bind(
-            captionMouseDown, state
-        );
-        state.videoCaption.captionClick        = _.bind(captionClick, state);
-        state.videoCaption.captionFocus        = _.bind(captionFocus, state);
-        state.videoCaption.captionBlur         = _.bind(captionBlur, state);
-        state.videoCaption.captionKeyDown      = _.bind(captionKeyDown, state);
+        state.bindTo(methodsList, state.videoCaption, state);
     }
 
     // ***************************************************************

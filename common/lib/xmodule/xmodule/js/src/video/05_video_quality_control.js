@@ -29,8 +29,11 @@ function () {
     //     Functions which will be accessible via 'state' object. When called, these functions will
     //     get the 'state' object as a context.
     function _makeFunctionsPublic(state) {
-        state.videoQualityControl.onQualityChange = _.bind(onQualityChange, state);
-        state.videoQualityControl.toggleQuality   = _.bind(toggleQuality, state);
+        var methodsList = [
+            onQualityChange, toggleQuality
+        ];
+
+        state.bindTo(methodsList, state.videoQualityControl, state);
     }
 
     // function _renderElements(state)
@@ -76,7 +79,7 @@ function () {
                                     .text(controlStateStr);
 
         }
-    }       
+    }
 
     // This function change quality of video.
     // Right now we haven't ability to choose quality of HD video,

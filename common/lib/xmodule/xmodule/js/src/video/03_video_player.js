@@ -24,33 +24,17 @@ function (HTML5Video, Resizer) {
     //     Functions which will be accessible via 'state' object. When called,
     //     these functions will get the 'state' object as a context.
     function _makeFunctionsPublic(state) {
-        state.videoPlayer.pause         = _.bind(pause, state);
-        state.videoPlayer.play          = _.bind(play, state);
-        state.videoPlayer.update        = _.bind(update, state);
-        state.videoPlayer.onSpeedChange = _.bind(onSpeedChange, state);
+        var methodsList = [
+            pause, play, update, onSpeedChange, onEnded, onPause, onPlay,
+            onUnstarted, handlePlaybackQualityChange, onPlaybackQualityChange,
+            onStateChange, onReady, updatePlayTime, isPlaying, log, duration,
+            onVolumeChange
+        ];
+
         state.videoPlayer.onCaptionSeek = _.bind(onSeek, state);
         state.videoPlayer.onSlideSeek   = _.bind(onSeek, state);
-        state.videoPlayer.onEnded       = _.bind(onEnded, state);
-        state.videoPlayer.onPause       = _.bind(onPause, state);
-        state.videoPlayer.onPlay        = _.bind(onPlay, state);
 
-        state.videoPlayer.onUnstarted   = _.bind(onUnstarted, state);
-
-        state.videoPlayer.handlePlaybackQualityChange = _.bind(
-            handlePlaybackQualityChange, state
-        );
-
-        state.videoPlayer.onPlaybackQualityChange = _.bind(
-            onPlaybackQualityChange, state
-        );
-
-        state.videoPlayer.onStateChange  = _.bind(onStateChange, state);
-        state.videoPlayer.onReady        = _.bind(onReady, state);
-        state.videoPlayer.updatePlayTime = _.bind(updatePlayTime, state);
-        state.videoPlayer.isPlaying      = _.bind(isPlaying, state);
-        state.videoPlayer.log            = _.bind(log, state);
-        state.videoPlayer.duration       = _.bind(duration, state);
-        state.videoPlayer.onVolumeChange = _.bind(onVolumeChange, state);
+        state.bindTo(methodsList, state.videoPlayer, state);
     }
 
     // function _initialize(state)
@@ -67,7 +51,9 @@ function (HTML5Video, Resizer) {
         // metadata is loaded, which normally happens just after the video
         // starts playing. Just after that configurations can be applied.
         state.videoPlayer.ready = _.once(function () {
-            state.videoPlayer.onSpeedChange(state.speed);
+            if (state.currentPlayerMode !== 'flash') {
+                state.videoPlayer.onSpeedChange(state.speed);
+            }
         });
 
         if (state.videoType === 'youtube') {
@@ -224,19 +210,23 @@ function (HTML5Video, Resizer) {
     }
 
     function onSpeedChange(newSpeed, updateCookie) {
+        var time = this.videoPlayer.currentTime,
+            methodName, youtubeId;
+
         if (this.currentPlayerMode === 'flash') {
             this.videoPlayer.currentTime = Time.convert(
-                this.videoPlayer.currentTime,
+                time,
                 parseFloat(this.speed),
                 newSpeed
             );
         }
+
         newSpeed = parseFloat(newSpeed).toFixed(2).replace(/\.00$/, '.0');
 
         this.videoPlayer.log(
             'speed_change_video',
             {
-                current_time: this.videoPlayer.currentTime,
+                current_time: time,
                 old_speed: this.speed,
                 new_speed: newSpeed
             }
@@ -259,17 +249,15 @@ function (HTML5Video, Resizer) {
             // speed is 1.0. The second case is necessary to avoid the bug
             // where in Firefox speed switching to 1.0 in HTML5 player mode is
             // handled incorrectly by YouTube API.
+            methodName = "cueVideoById";
+            youtubeId = this.youtubeId();
+
             if (this.videoPlayer.isPlaying()) {
-                this.videoPlayer.player.loadVideoById(
-                    this.youtubeId(), this.videoPlayer.currentTime
-                );
-            } else {
-                this.videoPlayer.player.cueVideoById(
-                    this.youtubeId(), this.videoPlayer.currentTime
-                );
+                methodName = "loadVideoById";
             }
 
-            this.videoPlayer.updatePlayTime(this.videoPlayer.currentTime);
+            this.videoPlayer.player[methodName](youtubeId, time);
+            this.videoPlayer.updatePlayTime(time);
         }
     }
 
@@ -318,11 +306,18 @@ function (HTML5Video, Resizer) {
     }
 
     function onEnded() {
+        var time = this.videoPlayer.duration();
+
         this.trigger('videoControl.pause', null);
 
         if (this.config.show_captions) {
             this.trigger('videoCaption.pause', null);
         }
+
+        // Sometimes `onEnded` events fires when `currentTime` not equal
+        // `duration`. In this case, slider doesn't reach the end point of
+        // timeline.
+        this.videoPlayer.updatePlayTime(time);
     }
 
     function onPause() {
@@ -355,6 +350,8 @@ function (HTML5Video, Resizer) {
             this.videoPlayer.updateInterval = setInterval(
                 this.videoPlayer.update, 200
             );
+
+            this.videoPlayer.update();
         }
 
         this.trigger('videoControl.play', null);
@@ -509,9 +506,8 @@ function (HTML5Video, Resizer) {
     }
 
     function updatePlayTime(time) {
-        var duration, durationChange;
-
-        duration = this.videoPlayer.duration();
+        var duration = this.videoPlayer.duration(),
+            durationChange;
 
         if (
             duration > 0 &&
@@ -563,14 +559,7 @@ function (HTML5Video, Resizer) {
             //
             // We seek only if start time differs from zero.
             if (durationChange === false && this.videoPlayer.startTime > 0) {
-                if (this.videoType === 'html5') {
-                    this.videoPlayer.player.seekTo(this.videoPlayer.startTime);
-                } else {
-                    this.videoPlayer.player.loadVideoById({
-                        videoId: this.youtubeId(),
-                        startSeconds: this.videoPlayer.startTime
-                    });
-                }
+                this.videoPlayer.player.seekTo(this.videoPlayer.startTime);
             }
 
             // Rebuild the slider start-end range (if it doesn't take up the
@@ -639,7 +628,7 @@ function (HTML5Video, Resizer) {
             dur = this.getDuration();
         }
 
-        return dur;
+        return Math.floor(dur);
     }
 
     function log(eventName, data) {
@@ -661,7 +650,7 @@ function (HTML5Video, Resizer) {
         if (this.videoType === 'youtube') {
             logInfo.code = this.youtubeId();
         } else  if (this.videoType === 'html5') {
-                logInfo.code = 'html5';
+            logInfo.code = 'html5';
         }
 
         Logger.log(eventName, logInfo);
