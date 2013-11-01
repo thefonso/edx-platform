@@ -159,7 +159,7 @@ class CapaFields(object):
         # and in inheritance.py
     )
     use_latex_compiler = Boolean(
-        help="Enable latex compiler in problems?",
+        help="Enable LaTeX compiler in problems?",
         default=False,
         scope=Scope.settings
     )
@@ -1187,10 +1187,7 @@ class CapaDescriptor(CapaFields, RawDescriptor):
         Show them only if use_latex_compiler is set to True in
         course settings.
         """
-        if 'latex' in template['template_id'] and not course.use_latex_compiler:
-            return False
-        else:
-            return True
+        return (not 'latex' in template['template_id'] or course.use_latex_compiler)
 
     def get_context(self):
         _context = RawDescriptor.get_context(self)
@@ -1220,7 +1217,8 @@ class CapaDescriptor(CapaFields, RawDescriptor):
             CapaDescriptor.force_save_button,
             CapaDescriptor.markdown,
             CapaDescriptor.text_customization,
-            CapaDescriptor.use_latex_compiler])
+            CapaDescriptor.use_latex_compiler
+        ])
         return non_editable_fields
 
     # Proxy to CapaModule for access to any of its attributes

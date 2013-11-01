@@ -31,7 +31,7 @@ class HtmlFields(object):
     data = String(help="Html contents to display for this module", default=u"", scope=Scope.content)
     source_code = String(help="Source code for LaTeX documents. This feature is not well-supported.", scope=Scope.settings)
     use_latex_compiler = Boolean(
-        help="Enable latex compiler in problems?",
+        help="Enable LaTeX compiler in problems?",
         default=False,
         scope=Scope.settings
     )
@@ -95,10 +95,7 @@ class HtmlDescriptor(HtmlFields, XmlDescriptor, EditingDescriptor):
         Show them only if use_latex_compiler is set to True in
         course settings.
         """
-        if 'latex' in template['template_id'] and not course.use_latex_compiler:
-            return False
-        else:
-            return True
+        return (not 'latex' in template['template_id'] or course.use_latex_compiler)
 
     def get_context(self):
         """
@@ -215,7 +212,7 @@ class HtmlDescriptor(HtmlFields, XmlDescriptor, EditingDescriptor):
     @property
     def non_editable_metadata_fields(self):
         non_editable_fields = super(HtmlDescriptor, self).non_editable_metadata_fields
-        non_editable_fields.extend([HtmlDescriptor.use_latex_compiler])
+        non_editable_fields.append(HtmlDescriptor.use_latex_compiler)
         return non_editable_fields
 
 
