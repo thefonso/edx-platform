@@ -65,6 +65,8 @@ log = logging.getLogger(__name__)
 FORUM_ROLE_ADD = 'add'
 FORUM_ROLE_REMOVE = 'remove'
 
+# For determining if a shibboleth course
+SHIBBOLETH_DOMAIN_PREFIX = 'shib:'
 
 def split_by_comma_and_whitespace(a_str):
     """
@@ -685,10 +687,11 @@ def instructor_dashboard(request, course_id):
 
     elif action == 'Enroll multiple students':
 
+        uses_shib = course.enrollment_domain and course.enrollment_domain.startswith(SHIBBOLETH_DOMAIN_PREFIX)
         students = request.POST.get('multiple_students', '')
         auto_enroll = bool(request.POST.get('auto_enroll'))
         email_students = bool(request.POST.get('email_students'))
-        ret = _do_enroll_students(course, course_id, students, auto_enroll=auto_enroll, email_students=email_students)
+        ret = _do_enroll_students(course, course_id, students, auto_enroll=auto_enroll, email_students=email_students, uses_shib=uses_shib)
         datatable = ret['datatable']
 
     elif action == 'Unenroll multiple students':
@@ -1208,7 +1211,7 @@ def grade_summary(request, course_id):
 #-----------------------------------------------------------------------------
 # enrollment
 
-def _do_enroll_students(course, course_id, students, overload=False, auto_enroll=False, email_students=False):
+def _do_enroll_students(course, course_id, students, overload=False, auto_enroll=False, email_students=False, uses_shib=False):
     """
     Do the actual work of enrolling multiple students, presented as a string
     of emails separated by commas or returns
@@ -1245,6 +1248,8 @@ def _do_enroll_students(course, course_id, students, overload=False, auto_enroll
              'course': course,
              'auto_enroll': auto_enroll,
              'course_url': 'https://' + stripped_site_name + '/courses/' + course_id,
+             'course_about_url': 'https://' + stripped_site_name + '/courses/' + course_id + '/about',
+             'uses_shib': uses_shib,
              }
 
     for student in new_students:
