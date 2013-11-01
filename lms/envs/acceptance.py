@@ -82,6 +82,19 @@ TRACKING_BACKENDS.update({
     }
 })
 
+
+# Enable asset pipeline
+#
+# PIPELINE is used by common/djangoapps/pipeline_mako/__init__.py
+# PIPELINE_ENABLED is used by django-pipeline as described
+# here: https://django-pipeline.readthedocs.org/en/latest/usage.html
+#
+# `PipelineFinder` is explained here: http://django-pipeline.readthedocs.org/en/1.1.24/storages.html
+PIPELINE = True
+PIPELINE_ENABLED = True
+STATICFILES_FINDERS += ('pipeline.finders.PipelineFinder', )
+
+
 BULK_EMAIL_DEFAULT_FROM_EMAIL = "test@test.org"
 
 # Forums are disabled in test.py to speed up unit tests, but we do not have

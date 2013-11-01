@@ -80,6 +80,18 @@ DATABASES = {
     }
 }
 
+# Enable asset pipeline
+#
+# PIPELINE is used by common/djangoapps/pipeline_mako/__init__.py
+# PIPELINE_ENABLED is used by django-pipeline as described
+# here: https://django-pipeline.readthedocs.org/en/latest/usage.html
+#
+# `PipelineFinder` is explained here: http://django-pipeline.readthedocs.org/en/1.1.24/storages.html
+PIPELINE = True
+PIPELINE_ENABLED = True
+STATICFILES_FINDERS += ('pipeline.finders.PipelineFinder', )
+
+
 # Use the auto_auth workflow for creating users and logging them in
 MITX_FEATURES['AUTOMATIC_AUTH_FOR_TESTING'] = True
 
