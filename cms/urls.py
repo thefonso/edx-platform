@@ -124,6 +124,7 @@ urlpatterns += patterns(
     url(r'(?ix)^assets/{}(/)?(?P<asset_id>.+)?$'.format(parsers.URL_RE_SOURCE), 'assets_handler'),
     url(r'(?ix)^import/{}$'.format(parsers.URL_RE_SOURCE), 'import_handler'),
     url(r'(?ix)^import_status/{}/(?P<filename>.+)$'.format(parsers.URL_RE_SOURCE), 'import_status_handler'),
+    url(r'(?ix)^xblock/{}$'.format(parsers.URL_RE_SOURCE), 'xblock_handler'),
 )
 
 js_info_dict = {

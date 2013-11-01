@@ -134,9 +134,11 @@ define ["jquery", "jquery.ui", "gettext", "backbone",
                 title: gettext('Deleting&hellip;'),
               deleting.show()
               $component = $(event.currentTarget).parents('.component')
-              $.postJSON('/delete_item', {
-                id: $component.data('id')
-              }, =>
+              $.ajax({
+                type:'DELETE',
+                url: $component.data('id_new'),
+                contentType: 'application/json'
+              }).success(=>
                 deleting.hide()
                 analytics.track "Deleted a Component",
                   course: course_location_analytics
@@ -162,16 +164,18 @@ define ["jquery", "jquery.ui", "gettext", "backbone",
 
     deleteDraft: (event) ->
       @wait(true)
+      $.ajax({
+          type: 'DELETE',
+          url: @$el.data('id_new'),
+          contentType: 'application/json',
+          data: JSON.stringify({'delete_children': true})
+      }).success(=>
 
-      $.postJSON('/delete_item', {
-        id: @$el.data('id')
-        delete_children: true
-      }, =>
-        analytics.track "Deleted Draft",
-          course: course_location_analytics
-          unit_id: unit_location_analytics
+          analytics.track "Deleted Draft",
+              course: course_location_analytics
+              unit_id: unit_location_analytics
 
-        window.location.reload()
+          window.location.reload()
       )
 
     createDraft: (event) ->

@@ -16,21 +16,43 @@ from util.json_request import expect_json, JsonResponse
 
 from ..transcripts_utils import manage_video_subtitles_save
 
-from ..utils import get_modulestore
+from ..utils import get_modulestore, get_course_for_item
 
 from .access import has_access
 from .helpers import _xmodule_recurse
 from xmodule.x_module import XModuleDescriptor
 from django.views.decorators.http import require_http_methods
-from xmodule.modulestore.locator import CourseLocator, BlockUsageLocator
+from xmodule.modulestore.locator import BlockUsageLocator
 from student.models import CourseEnrollment
 
-__all__ = ['save_item', 'create_item', 'delete_item', 'orphan']
+__all__ = ['save_item', 'create_item', 'delete_item', 'orphan', 'xblock_handler']
 
 log = logging.getLogger(__name__)
 
 # cdodge: these are categories which should not be parented, they are detached from the hierarchy
 DETACHED_CATEGORIES = ['about', 'static_tab', 'course_info']
+
+
+@login_required
+@expect_json
+def xblock_handler(request, tag=None, course_id=None, branch=None, version_guid=None, block=None):
+#     TODO: there is still some lurking bug in deleting an xmoudle in a draft version (when it has never been
+#    made public).
+
+# Attack plan: make all changes additive (leave data-id as it was before). Then at the end, try to delete data-id.
+    if request.method == 'DELETE':
+        location = BlockUsageLocator(course_id=course_id, branch=branch, version_guid=version_guid, usage_id=block)
+        if not has_access(request.user, location):
+            raise PermissionDenied()
+
+        old_location = loc_mapper().translate_locator_to_location(location)
+
+#        # optional parameter to delete all children (default False)
+        delete_children = request.json.get('delete_children', False)
+        delete_all_versions = request.json.get('delete_all_versions', False)
+
+        delete_item_at_location(old_location, delete_children, delete_all_versions)
+        return JsonResponse()
 
 
 @login_required
@@ -171,15 +193,18 @@ def create_item(request):
     if category not in DETACHED_CATEGORIES:
         get_modulestore(parent.location).update_children(parent_location, parent.children + [dest_location.url()])
 
-    return JsonResponse({'id': dest_location.url()})
+    # TODO: not sure if this is correct for all usages of create_item (the draft part of it).
+    id_new = loc_mapper().translate_location(
+        get_course_for_item(parent_location).location.course_id, dest_location, False, True
+    )
+    return JsonResponse({'id': dest_location.url(), "id_new": id_new.url_reverse("xblock", "")})
 
 
 @login_required
 @expect_json
 def delete_item(request):
     """View for removing items."""
-    item_location = request.json['id']
-    item_location = Location(item_location)
+    item_location = Location(request.json['id'])
 
     # check permissions for this user within this course
     if not has_access(request.user, item_location):
@@ -189,6 +214,16 @@ def delete_item(request):
     delete_children = request.json.get('delete_children', False)
     delete_all_versions = request.json.get('delete_all_versions', False)
 
+    delete_item_at_location(item_location, delete_children, delete_all_versions)
+    return JsonResponse()
+
+
+def delete_item_at_location(item_location, delete_children=False, delete_all_versions=False):
+    """
+    Deletes the item at with the given Location.
+
+    It is assumed that course permissions have already been checked.
+    """
     store = get_modulestore(item_location)
 
     item = store.get_item(item_location)
@@ -210,8 +245,6 @@ def delete_item(request):
                 children.remove(item_url)
                 parent.children = children
                 modulestore('direct').update_children(parent.location, parent.children)
-
-    return JsonResponse()
 
 # pylint: disable=W0613
 @login_required

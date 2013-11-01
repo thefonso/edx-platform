@@ -16,6 +16,7 @@ from mitxmako.shortcuts import render_to_response
 from xmodule.modulestore import Location
 from xmodule.modulestore.django import modulestore
 from xmodule.util.date_utils import get_default_time_display
+from xmodule.modulestore.django import loc_mapper
 
 from xblock.fields import Scope
 from util.json_request import expect_json, JsonResponse
@@ -174,6 +175,11 @@ def edit_unit(request, location):
             course_id=course.location.course_id
     )
 
+    unit_state = compute_unit_state(item)
+    new_location = loc_mapper().translate_location(
+        course.location.course_id, Location(location), unit_state=='public', True
+    ).url_reverse("xblock", "")
+
     component_templates = defaultdict(list)
     for category in COMPONENT_TYPES:
         component_class = load_mixed_class(category)
@@ -235,11 +241,16 @@ def edit_unit(request, location):
             course_advanced_keys
         )
 
+
+
     components = [
-        component.location.url()
+        [component.location.url(), loc_mapper().translate_location(
+            course.location.course_id, component.location, unit_state=='public', True
+        ).url_reverse("xblock", "")]
         for component
         in item.get_children()
     ]
+
 
     # TODO (cpennington): If we share units between courses,
     # this will need to change to check permissions correctly so as
@@ -281,12 +292,13 @@ def edit_unit(request, location):
             index=index
         )
 
-    unit_state = compute_unit_state(item)
+
 
     return render_to_response('unit.html', {
         'context_course': course,
         'unit': item,
         'unit_location': location,
+        'new_unit_id': new_location,
         'components': components,
         'component_templates': component_templates,
         'draft_preview_link': preview_lms_link,
@@ -303,6 +315,7 @@ def edit_unit(request, location):
             get_default_time_display(item.published_date)
             if item.published_date is not None else None
         ),
+        'handler_prefix': "xblock"
     })
 
 
