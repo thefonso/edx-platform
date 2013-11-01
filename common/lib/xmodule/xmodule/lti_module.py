@@ -247,7 +247,7 @@ class LTIModule(LTIFields, XModule):
         # This is an opaque identifier that uniquely identifies the context that contains
         # the link being launched. This parameter is recommended.
 
-        # so it lti_id
+        # so context_id is lti_id
         return self.lti_id
 
     def get_resource_link_id(self):
@@ -313,6 +313,8 @@ class LTIModule(LTIFields, XModule):
             # required
             u'resource_link_id': self.get_resource_link_id(),
             u'lis_outcome_service_url': '{}/grade_lti'.format(self.get_base_path()) if self.is_graded else '',
+
+            # optional fields
             u'lis_result_sourcedid': self.get_lis_result_sourcedid(),
             u'lis_person_sourcedid': self.get_lis_person_sourcedid(),
 
